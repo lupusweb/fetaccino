@@ -1,0 +1,44 @@
+# Changelog
+
+## [Unreleased]
+- **Phase 12 Complete:**
+  - Wrote comprehensive setup instructions in `README.md`.
+  - Documented Google Cloud OAuth Client ID configuration steps.
+  - Finalized project for local deployment.
+  - Optimized production builds by stripping `console` statements via ESBuild.
+  - Verified dynamic chunking of the service worker for instantaneous boot times.
+  - Added global error boundaries to the background service worker and content script.
+  - Developed a `fetchWithRetry` wrapper for Google Sheets API requests, implementing exponential backoff.
+  - Added lightweight duplicate detection logic to query Google Sheets before saving.
+  - Implemented normalized comparison for phone numbers and business names.
+  - Updated Popup UI to display duplicate warnings and support a "Save Anyway" bypass.
+  - Designed and deployed a dedicated Options page (`src/options`).
+  - Added Settings ⚙️ button to the Popup header.
+  - Implemented `TEST_SHEETS_CONNECTION` logic to validate the Spreadsheet ID.
+  - Stored target Spreadsheet ID securely in `chrome.storage.sync`.
+  - Integrated Google Sheets API via `sheets.ts` to append rows.
+  - Implemented background script orchestration for `ADD_BUSINESS` (Auth -> Storage -> Sheets API).
+  - Linked Popup "Save to Sheets" button to dispatch data to the background worker.
+  - Added OAuth2 configuration to `manifest.json`.
+  - Implemented `chrome.identity.getAuthToken` wrapper in the background script.
+  - Added visual authentication state and "Sign in with Google" button to the popup.
+  - Designed and implemented editable popup form for BusinessData preview.
+  - Added temporary persistence via `chrome.storage.local` to prevent data loss on popup close.
+  - Added visual confidence score bar.
+  - Implemented debounced `MutationObserver` (observer.ts) for dynamic navigation support.
+  - Added visual user feedback via Chrome Action Badging when a business context is detected.
+  - Broadcasted context updates continuously from the content script to the service worker.
+  - Implemented BusinessData domain model and normalization utilities.
+  - Implemented parser strategies for Google Search and Google Maps.
+  - Added confidence scoring for extracted data.
+  - Added JSDOM-based deterministic tests for parser logic.
+  - Wired `GET_CURRENT_BUSINESS` messaging and updated popup UI to preview extracted data.
+  - Implemented page detection for Google Search and Google Maps (detector.ts).
+  - Added URL pattern recognition and initial DOM heuristics for business context detection.
+  - Added unit tests for URL parsing.
+  - Wired `DETECT_PAGE_CONTEXT` messaging and updated popup UI to display detection status.
+  - Implemented typed extension messaging (messages.ts).
+  - Created centralized logger and storage services.
+  - Wired message routing: Popup ↔ Service Worker ↔ Content Script.
+  - Added Vitest and unit tests for the logger.
+- Initialized Phase 0: Project structure, Vite setup, Manifest V3 base files.
