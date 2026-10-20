@@ -257,3 +257,85 @@ body {
 .dest-banner-change:hover {
   background-color: #e8f0fe;
 }
+
+
+/* Page Detected Leads Card */
+.page-detected-container {
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.page-detected-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #e8f0fe;
+  border: 1px solid #c2e7ff;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.page-detected-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-right: 8px;
+}
+
+.page-detected-tag {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #1a73e8;
+  margin-bottom: 2px;
+}
+
+.page-detected-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #202124;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-detected-meta {
+  font-size: 11px;
+  color: #5f6368;
+}
+
+.add-detected-btn {
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.add-detected-btn:hover {
+  background-color: #1557b0;
+}
+
+.add-all-page-btn {
+  width: 100%;
+  background: white;
+  color: #1a73e8;
+  border: 1px solid #1a73e8;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.add-all-page-btn:hover {
+  background: #e8f0fe;
+}

@@ -12,20 +12,30 @@ export const detectPageSource = (urlStr: string): PageSource => {
     const url = new URL(urlStr);
     
     // Check for Google Maps
-    if (url.pathname.startsWith('/maps')) {
+    if (url.hostname.startsWith('maps.') || url.pathname.startsWith('/maps') || url.pathname.includes('/maps')) {
       return PageSource.MAPS;
     }
     
-    // Check for Google Search
-    if (url.pathname === '/search' && url.searchParams.has('q')) {
+    // Check for Google Search / Places tab
+    if (
+      url.pathname.startsWith('/search') || 
+      url.pathname.startsWith('/webhp') || 
+      url.searchParams.has('q') ||
+      url.searchParams.has('udm') ||
+      url.searchParams.has('tbm')
+    ) {
       return PageSource.SEARCH;
     }
 
-    // Sometimes search doesn't explicitly have /search, but has q parameter on root
-    if (url.pathname === '/' && url.searchParams.has('q')) {
-      return PageSource.SEARCH;
+    // In-DOM verification for client-side search navigation
+    if (typeof document !== 'undefined') {
+      if (document.querySelector('div[role="feed"], div[id^="pv-"], div.dbg0pd, #search, #rso, span.HjGrCb')) {
+        return PageSource.SEARCH;
+      }
+      if (document.querySelector('h1.DUwDvf, a.hfpxzc, .fontHeadlineSmall')) {
+        return PageSource.MAPS;
+      }
     }
-
   } catch (e) {
     return PageSource.UNKNOWN;
   }
@@ -37,25 +47,19 @@ export const detectBusinessContext = (source: PageSource): boolean => {
   if (source === PageSource.UNKNOWN) return false;
 
   if (source === PageSource.MAPS) {
-    // Maps business side-panel heuristic
-    // h1 with class DUwDvf usually contains the business name
     const hasMapsBusinessTitle = !!document.querySelector('h1.DUwDvf');
-    // Action buttons typically found on Maps listings
     const hasActionButtons = !!document.querySelector('button[data-value="Save"]') || !!document.querySelector('button[data-value="Share"]');
-    
-    return hasMapsBusinessTitle || hasActionButtons;
+    const hasCards = !!document.querySelector('a.hfpxzc, div[role="article"], .fontHeadlineSmall');
+    return hasMapsBusinessTitle || hasActionButtons || hasCards;
   }
 
   if (source === PageSource.SEARCH) {
-    // Search knowledge panel heuristic
-    // Local business KP
-    const hasLocalBusinessKp = !!document.querySelector('[data-attrid="kp-page-block-local-business"]');
-    // Generic KP on the right hand side
-    const hasGenericKp = !!document.querySelector('#rhs .kp-wholepage');
-    // Places list / Map pack
-    const hasMapPack = !!document.querySelector('.O8T7bf'); 
-    
-    return hasLocalBusinessKp || hasGenericKp || hasMapPack;
+    // Places tab listing cards
+    const hasPlacesTabCards = !!document.querySelector('div[id^="pv-"], div.dbg0pd, div.VkpGBb, div.rllt__details, div[data-cid]');
+    // Detail panel / knowledge panel
+    const hasDetailPanel = !!document.querySelector('span.HjGrCb, [role="heading"].HjGrCb, [data-attrid="title"], div.SPZz6b, h2.qrShPb, #rhs .kp-wholepage, [data-attrid="kp-page-block-local-business"]');
+
+    return hasPlacesTabCards || hasDetailPanel;
   }
 
   return false;

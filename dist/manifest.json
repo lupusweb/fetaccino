@@ -22,14 +22,16 @@
   "content_scripts": [
     {
       "js": [
-        "assets/index.ts-loader-Brj4EsiI.js"
+        "assets/index.ts-loader-CccckE62.js"
       ],
       "matches": [
-        "*://www.google.com/maps/*",
-        "*://www.google.com/search/*"
+        "*://*.google.com/*",
+        "*://google.com/*",
+        "*://*.google.co.in/*",
+        "*://google.co.in/*"
       ],
       "css": [
-        "assets/index-Bqe2g6h_.css"
+        "assets/index-mrF2LVHs.css"
       ]
     }
   ],
@@ -49,21 +51,26 @@
     "open_in_tab": true
   },
   "host_permissions": [
-    "*://www.google.com/maps/*",
-    "*://www.google.com/search/*",
+    "*://*.google.com/*",
+    "*://google.com/*",
+    "*://*.google.co.in/*",
+    "*://google.co.in/*",
     "https://sheets.googleapis.com/*",
     "https://www.googleapis.com/*"
   ],
   "web_accessible_resources": [
     {
       "matches": [
-        "*://www.google.com/*",
-        "*://www.google.com/*"
+        "*://*.google.co.in/*",
+        "*://*.google.com/*",
+        "*://google.co.in/*",
+        "*://google.com/*"
       ],
       "resources": [
         "assets/messages-BIE1jFtk.js",
         "assets/logger-BziXm1XX.js",
-        "assets/index.ts-CMXPjHpB.js"
+        "assets/business-sh2DIUqn.js",
+        "assets/index.ts-DaBmWabo.js"
       ],
       "use_dynamic_url": false
     }

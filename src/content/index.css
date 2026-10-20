@@ -1,29 +1,39 @@
 /* Content script specific styles */
 .fetaccino-overlay {
   position: absolute;
-  top: 8px;
-  right: 8px;
   width: 24px;
   height: 24px;
   background: white;
   border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 99999;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
+.fetaccino-overlay.pos-top-left {
+  top: 8px;
+  left: 8px;
+}
+
+.fetaccino-overlay.pos-top-right {
+  top: 8px;
+  right: 8px;
+}
+
 .fetaccino-overlay:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  border-color: #1a73e8;
 }
 
 .fetaccino-overlay.selected {
   background: #e8f0fe;
-  border: 1px solid #1a73e8;
+  border: 1.5px solid #1a73e8;
 }
 
 .fetaccino-checkbox {
@@ -31,5 +41,5 @@
   width: 16px;
   height: 16px;
   margin: 0;
-  pointer-events: none; /* Let the overlay handle the click */
+  pointer-events: none; /* Let overlay handle click */
 }

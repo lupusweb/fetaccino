@@ -25,6 +25,15 @@ export const normalizeRating = (ratingStr: string | null | undefined): number | 
 export const normalizeReviewCount = (reviewStr: string | null | undefined): number | undefined => {
   const text = normalizeText(reviewStr);
   if (!text) return undefined;
+
+  // Handle K (thousand) and M (million) abbreviations e.g. 7.5K, 1.2M
+  const kmMatch = text.match(/([\d]+(?:[\.,][\d]+)?)\s*([kmKM])/);
+  if (kmMatch) {
+    const num = parseFloat(kmMatch[1].replace(',', '.'));
+    const multiplier = kmMatch[2].toLowerCase() === 'm' ? 1000000 : 1000;
+    return Math.round(num * multiplier);
+  }
+
   const numberStr = text.replace(/[^\d]/g, '');
   const count = parseInt(numberStr, 10);
   return isNaN(count) ? undefined : count;
@@ -44,7 +53,12 @@ export const normalizeUrl = (url: string | null | undefined): string | undefined
   return text;
 };
 
+import { isBlacklistedBusinessName } from '../../domain/business';
+
 export const calculateConfidence = (data: Partial<BusinessData>): number => {
+  if (isBlacklistedBusinessName(data.name)) {
+    return 0;
+  }
   let score = 0;
   let maxScore = 0;
 

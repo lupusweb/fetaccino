@@ -2,20 +2,23 @@ import { analyzeCurrentPage, PageDetectionResult } from './detector';
 import { logger } from '../services/logger';
 
 type ContextChangeCallback = (context: PageDetectionResult) => void;
+type DomMutateCallback = () => void;
 
 let observer: MutationObserver | null = null;
 let lastUrl: string = window.location.href;
-let timeoutId: number | null = null;
+let mutateTimeoutId: number | null = null;
+let contextTimeoutId: number | null = null;
 let lastContextHasBusiness = false;
+let lastInjectTime = 0;
+const THROTTLE_MS = 100; // Fast responsive injection without being starved by streaming AI tokens
 
-export const startObserver = (onContextChange: ContextChangeCallback) => {
+export const startObserver = (onContextChange: ContextChangeCallback, onDomMutate?: DomMutateCallback) => {
   if (observer) return;
 
   const checkContext = () => {
     const currentUrl = window.location.href;
     const context = analyzeCurrentPage(currentUrl);
 
-    // Trigger update if URL changed or business context availability changed
     if (currentUrl !== lastUrl || context.hasBusinessContext !== lastContextHasBusiness) {
       lastUrl = currentUrl;
       lastContextHasBusiness = context.hasBusinessContext;
@@ -24,13 +27,29 @@ export const startObserver = (onContextChange: ContextChangeCallback) => {
   };
 
   observer = new MutationObserver(() => {
-    if (timeoutId) {
-      window.clearTimeout(timeoutId);
+    const now = Date.now();
+
+    // Throttled fast injection: fires every 100ms even if DOM is rapidly mutating (e.g. streaming chat)
+    if (now - lastInjectTime >= THROTTLE_MS) {
+      lastInjectTime = now;
+      if (onDomMutate) onDomMutate();
+    } else {
+      if (mutateTimeoutId) {
+        window.clearTimeout(mutateTimeoutId);
+      }
+      mutateTimeoutId = window.setTimeout(() => {
+        lastInjectTime = Date.now();
+        if (onDomMutate) onDomMutate();
+      }, THROTTLE_MS);
     }
-    // Debounce DOM mutations to prevent excessive CPU usage
-    timeoutId = window.setTimeout(() => {
+
+    // Context & badge update debounce (200ms)
+    if (contextTimeoutId) {
+      window.clearTimeout(contextTimeoutId);
+    }
+    contextTimeoutId = window.setTimeout(() => {
       checkContext();
-    }, 1000); 
+    }, 200);
   });
 
   observer.observe(document.body, {
@@ -38,9 +57,10 @@ export const startObserver = (onContextChange: ContextChangeCallback) => {
     subtree: true,
   });
   
-  // Initial check
+  // Initial check & immediate injection
   checkContext();
-  logger.info('MutationObserver started for dynamic navigation detection');
+  if (onDomMutate) onDomMutate();
+  logger.info('MutationObserver started with throttled responsive injection');
 };
 
 export const stopObserver = () => {
@@ -48,9 +68,13 @@ export const stopObserver = () => {
     observer.disconnect();
     observer = null;
   }
-  if (timeoutId) {
-    window.clearTimeout(timeoutId);
-    timeoutId = null;
+  if (mutateTimeoutId) {
+    window.clearTimeout(mutateTimeoutId);
+    mutateTimeoutId = null;
+  }
+  if (contextTimeoutId) {
+    window.clearTimeout(contextTimeoutId);
+    contextTimeoutId = null;
   }
   logger.info('MutationObserver stopped');
 };

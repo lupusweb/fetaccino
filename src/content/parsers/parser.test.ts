@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect } from 'vitest';
-import { parseSearchPage } from './search';
+import { parseSearchPage, parseSearchBulk } from './search';
 import { parseMapsPage, parseMapsBulk } from './maps';
 import { normalizeRating, normalizePhone, normalizeReviewCount, normalizeUrl } from './normalizer';
 
@@ -53,6 +53,47 @@ describe('Parsers with JSDOM', () => {
     expect(result.phone).toBe('+1 555-123-4567');
     expect(result.website).toBe('http://testbusiness.com/');
     expect(result.confidenceScore).toBeGreaterThan(80);
+  });
+
+  it('parses Google Search Local Results Bulk', () => {
+    document.body.innerHTML = `
+      <div class="VkpGBb" data-cid="112233">
+        <div class="rllt__details">
+          <div class="dbg0pd">Tonique MG Road</div>
+          <div class="W4Efsd">
+            <span class="yi40Hd">4.1</span>
+            <span class="RDApEe">(7.5K)</span>
+            <span>· North Indian</span>
+          </div>
+          <div class="W4Efsd">
+            <span>Rathnam Complex, Kasturba Road</span>
+          </div>
+        </div>
+      </div>
+      <div class="VkpGBb" data-cid="445566">
+        <div class="rllt__details">
+          <div class="dbg0pd">Bengaluru Restaurant</div>
+          <div class="W4Efsd">
+            <span class="yi40Hd">4.7</span>
+            <span class="RDApEe">(438)</span>
+            <span>· Indian</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const results = parseSearchBulk(document);
+    expect(results.length).toBe(2);
+    expect(results[0].name).toBe('Tonique MG Road');
+    expect(results[0].rating).toBe(4.1);
+    expect(results[0].reviewCount).toBe(7500);
+    expect(results[0].category).toBe('North Indian');
+    expect(results[0]._sourceId).toBe('cid:112233');
+
+    expect(results[1].name).toBe('Bengaluru Restaurant');
+    expect(results[1].rating).toBe(4.7);
+    expect(results[1].reviewCount).toBe(438);
+    expect(results[1].category).toBe('Indian');
   });
 
   it('parses Google Maps Sidebar', () => {
@@ -120,5 +161,85 @@ describe('Parsers with JSDOM', () => {
     expect(results[1].reviewCount).toBe(45);
     expect(results[1].category).toBe('Handyman');
     expect(results[1]._sourceId).toBe('https://www.google.com/maps/place/FixIt+Fast');
+  });
+
+  it('parses Ask Maps Conversational Cards', () => {
+    document.body.innerHTML = `
+      <div class="chat-container">
+        <div role="article">
+          <div class="fontHeadlineSmall">Loren&Veni Nail&Lashes Studio</div>
+          <div><span>5.0 ★ · Nail salon</span></div>
+          <a href="https://www.google.com/maps/place/Loren+Veni/@12.97,77.59"></a>
+        </div>
+      </div>
+    `;
+
+    const results = parseMapsBulk(document);
+    expect(results.length).toBe(1);
+    expect(results[0].name).toBe('Loren&Veni Nail&Lashes Studio');
+    expect(results[0].rating).toBe(5.0);
+    expect(results[0].category).toBe('Nail salon');
+    expect(results[0]._sourceId).toBe('https://www.google.com/maps/place/Loren+Veni');
+  });
+  it('parses Google Search Places Tab Bulk (udm=local)', () => {
+    document.body.innerHTML = `
+      <div role="feed">
+        <div id="pv-/g/11b7b7k8m" role="button">
+          <div class="dbg0pd"><span>The Reservoire Koramangala</span></div>
+          <div>
+            <span class="Y0A0hc" aria-label="Rated 4.3 out of 5, 16K user reviews">4.3 ★ (16K)</span>
+            <div>· Cocktail bar</div>
+          </div>
+          <div>17th Main Rd</div>
+        </div>
+        <div id="pv-/g/11c223344" role="button">
+          <div class="dbg0pd"><span>Nandhana Palace</span></div>
+          <div>
+            <span class="Y0A0hc" aria-label="Rated 4.4 out of 5, 11K user reviews">4.4 ★ (11K)</span>
+            <div>· Andhra</div>
+          </div>
+          <div>7, Mahakavi Vemana Rd</div>
+        </div>
+      </div>
+    `;
+
+    const results = parseSearchBulk(document);
+    expect(results.length).toBe(2);
+    expect(results[0].name).toBe('The Reservoire Koramangala');
+    expect(results[0].rating).toBe(4.3);
+    expect(results[0].reviewCount).toBe(16000);
+    expect(results[0].category).toBe('Cocktail bar');
+    expect(results[0].address).toBe('17th Main Rd');
+    expect(results[0]._sourceId).toBe('pv-/g/11b7b7k8m');
+
+    expect(results[1].name).toBe('Nandhana Palace');
+    expect(results[1].rating).toBe(4.4);
+    expect(results[1].reviewCount).toBe(11000);
+    expect(results[1].category).toBe('Andhra');
+  });
+
+  it('parses Google Search Places Tab Detail Panel', () => {
+    document.body.innerHTML = `
+      <div class="detail-panel">
+        <div>
+          <span class="HjGrCb lOLudc" role="heading">Bangalore Thindies</span>
+          <div class="dHX2k">4.1</div>
+          <div class="leIgTe">(795)</div>
+          <span class="YhemCb">South Indian</span>
+          <span class="LrzXr">Bowring Hospital Emergency, Bengaluru</span>
+          <a class="ab_button" href="https://bangalorethindies.com">Website</a>
+          <a class="ab_button" href="https://maps.google.com/maps/dir/Bangalore+Thindies">Directions</a>
+        </div>
+      </div>
+    `;
+
+    const result = parseSearchPage(document, 'https://www.google.com/search?q=restaurants+near+me&udm=local');
+    expect(result.name).toBe('Bangalore Thindies');
+    expect(result.rating).toBe(4.1);
+    expect(result.reviewCount).toBe(795);
+    expect(result.category).toBe('South Indian');
+    expect(result.address).toBe('Bowring Hospital Emergency, Bengaluru');
+    expect(result.website).toBe('https://bangalorethindies.com/');
+    expect(result.mapsUrl).toBe('https://maps.google.com/maps/dir/Bangalore+Thindies');
   });
 });

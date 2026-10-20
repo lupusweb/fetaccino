@@ -21,8 +21,15 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://www.google.com/maps/*", "*://www.google.com/search/*"],
-      "js": ["src/content/index.ts"]
+      "matches": [
+        "*://*.google.com/*",
+        "*://google.com/*",
+        "*://*.google.co.in/*",
+        "*://google.co.in/*"
+      ],
+      "js": [
+        "src/content/index.ts"
+      ]
     }
   ],
   "permissions": [
@@ -41,8 +48,10 @@
     "open_in_tab": true
   },
   "host_permissions": [
-    "*://www.google.com/maps/*",
-    "*://www.google.com/search/*",
+    "*://*.google.com/*",
+    "*://google.com/*",
+    "*://*.google.co.in/*",
+    "*://google.co.in/*",
     "https://sheets.googleapis.com/*",
     "https://www.googleapis.com/*"
   ]

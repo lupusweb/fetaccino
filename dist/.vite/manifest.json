@@ -1,6 +1,6 @@
 {
   "../../@crx/manifest": {
-    "file": "assets/crx-manifest.js-CisA4PV8.js",
+    "file": "assets/crx-manifest.js-Bocb-Rj3.js",
     "name": "crx-manifest.js",
     "src": "../../@crx/manifest",
     "isEntry": true
@@ -19,6 +19,10 @@
       "assets/DestinationSelector-Bvb-4zUW.css"
     ]
   },
+  "_business-sh2DIUqn.js": {
+    "file": "assets/business-sh2DIUqn.js",
+    "name": "business"
+  },
   "_logger-BziXm1XX.js": {
     "file": "assets/logger-BziXm1XX.js",
     "name": "logger"
@@ -28,20 +32,21 @@
     "name": "messages"
   },
   "index.html": {
-    "file": "assets/index.html-E6N4xiTe.js",
+    "file": "assets/index.html-R00g9fYs.js",
     "name": "index.html",
     "src": "index.html",
     "isEntry": true,
     "imports": [
       "_DestinationSelector-RmxrSYLF.js",
+      "_business-sh2DIUqn.js",
       "_messages-BIE1jFtk.js"
     ],
     "css": [
-      "assets/index-BW1sA6zJ.css"
+      "assets/index-DA2sRvst.css"
     ]
   },
   "index.ts-loader.js": {
-    "file": "assets/index.ts-loader-Brj4EsiI.js",
+    "file": "assets/index.ts-loader-CccckE62.js",
     "src": "index.ts-loader.js"
   },
   "src/background/index.ts": {
@@ -55,16 +60,17 @@
     ]
   },
   "src/content/index.ts": {
-    "file": "assets/index.ts-CMXPjHpB.js",
+    "file": "assets/index.ts-DaBmWabo.js",
     "name": "index.ts",
     "src": "src/content/index.ts",
     "isEntry": true,
     "imports": [
       "_messages-BIE1jFtk.js",
-      "_logger-BziXm1XX.js"
+      "_logger-BziXm1XX.js",
+      "_business-sh2DIUqn.js"
     ],
     "css": [
-      "assets/index-Bqe2g6h_.css"
+      "assets/index-mrF2LVHs.css"
     ]
   },
   "src/options/index.html": {
