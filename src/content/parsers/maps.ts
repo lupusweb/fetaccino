@@ -1,4 +1,4 @@
-import { BusinessData, PageSource, isBlacklistedBusinessName } from '../../domain/business';
+import { BusinessData, PageSource } from '../../domain/business';
 import { 
   normalizeText, 
   normalizePhone, 
@@ -8,6 +8,9 @@ import {
   calculateConfidence 
 } from './normalizer';
 
+/**
+ * Parses the single active place details panel (identified by the unique h1.DUwDvf)
+ */
 export const parseMapsPage = (doc: Document | Element, url?: string): BusinessData => {
   const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
   const data: Partial<BusinessData> = {
@@ -19,8 +22,7 @@ export const parseMapsPage = (doc: Document | Element, url?: string): BusinessDa
   const nameEl = doc.querySelector('h1.DUwDvf');
   data.name = normalizeText(nameEl?.textContent);
 
-  if (isBlacklistedBusinessName(data.name)) {
-    data.name = undefined;
+  if (!data.name) {
     data.confidenceScore = 0;
     return data as BusinessData;
   }
@@ -58,10 +60,13 @@ export const parseMapsPage = (doc: Document | Element, url?: string): BusinessDa
   return data as BusinessData;
 };
 
+/**
+ * Parses a single classic Google Maps listing card (identified by a.hfpxzc)
+ */
 export const parseSingleCard = (card: Element): BusinessData | null => {
   const name = normalizeText(card.getAttribute('aria-label') || card.textContent);
   const href = card.getAttribute('href');
-  if (!name || !href || isBlacklistedBusinessName(name)) return null;
+  if (!name || !href) return null;
 
   let sourceId = href;
   try {
@@ -104,26 +109,39 @@ export const parseSingleCard = (card: Element): BusinessData | null => {
   return data as BusinessData;
 };
 
-export const parseAskMapsCard = (card: Element): BusinessData | null => {
-  // Title detection for conversational/Ask Maps cards
-  const nameEl = card.querySelector('.fontHeadlineSmall')
-              || card.querySelector('div[role="heading"]')
-              || card.querySelector('h2')
-              || card.querySelector('h3')
-              || card.querySelector('a[href*="/maps/place"]');
-
-  const name = normalizeText(nameEl?.textContent || nameEl?.getAttribute('aria-label'));
-  if (!name || name.length < 2 || isBlacklistedBusinessName(name)) return null;
-
-  // A valid Ask Maps card must have a place link or action buttons or rating
-  const linkEl = card.querySelector('a[href*="/maps/place"]') as HTMLAnchorElement;
-  const hasActionButtons = !!card.querySelector('button[data-value="Directions"], button[data-value="Save"], button[aria-label*="Directions"], button[aria-label*="Save"], button[jsaction*="directions"]');
-  const hasRating = !!card.querySelector('span[aria-label*="stars"], span[aria-label*="rating"]');
-
-  if (!linkEl && !hasActionButtons && !hasRating) {
+/**
+ * Parses a conversational / Ask Maps place recommendation.
+ * Structurally, genuine places in Google Maps chat MUST contain an interactive anchor linking to the place (/maps/place/).
+ */
+export const parseAskMapsCard = (linkOrCard: Element): BusinessData | null => {
+  // 1. Locate the place link (anchors pointing to /maps/place/)
+  const linkEl = (linkOrCard.matches('a[href*="/maps/place"]') ? linkOrCard : linkOrCard.querySelector('a[href*="/maps/place"]')) as HTMLAnchorElement | null;
+  const href = linkEl?.getAttribute('href') || (linkOrCard.matches('a[href]') ? linkOrCard.getAttribute('href') : null);
+  
+  if (!href || !href.includes('/maps/place/')) {
     return null;
   }
 
+  // 2. Identify enclosing card container
+  const card = linkOrCard.closest('div[role="article"] > div, div[jsaction*="place"], div[role="listitem"], div[role="article"]') || linkOrCard.parentElement || linkOrCard;
+
+  // 3. Extract business name
+  const headingEl = card.querySelector('.fontHeadlineSmall, [role="heading"], h2, h3');
+  let name = normalizeText(headingEl?.textContent || linkEl?.getAttribute('aria-label') || linkEl?.textContent);
+
+  // Fallback: extract place name cleanly from the URL pathname (/maps/place/<PlaceName>/)
+  if (!name || name.length < 2) {
+    try {
+      const match = href.match(/\/maps\/place\/([^\/@?#]+)/);
+      if (match && match[1]) {
+        name = normalizeText(decodeURIComponent(match[1].replace(/\+/g, ' ')));
+      }
+    } catch(e) {}
+  }
+
+  if (!name || name.length < 2) return null;
+
+  // 4. Extract rating & reviews
   let rating: number | undefined;
   let reviewCount: number | undefined;
   let category: string | undefined;
@@ -133,7 +151,12 @@ export const parseAskMapsCard = (card: Element): BusinessData | null => {
     rating = normalizeRating(ratingEl.getAttribute('aria-label') || ratingEl.textContent);
   }
 
-  // Look for text matching rating & category
+  const reviewEl = card.querySelector('span[aria-label*="reviews"]');
+  if (reviewEl) {
+    reviewCount = normalizeReviewCount(reviewEl.getAttribute('aria-label') || reviewEl.textContent);
+  }
+
+  // Look for text matching rating & category in card text
   const textContainers = card.querySelectorAll('span, div, p');
   for (const el of textContainers) {
     const text = el.textContent || '';
@@ -144,42 +167,40 @@ export const parseAskMapsCard = (card: Element): BusinessData | null => {
     if ((text.includes('·') || text.includes('•')) && !category) {
       const parts = text.split(/[·•]/);
       const catPart = parts[parts.length - 1].trim();
-      if (catPart && catPart.length < 30 && !catPart.includes('Opens') && !catPart.includes('Closed') && !/\d/.test(catPart)) {
+      if (catPart && catPart.length < 35 && !catPart.includes('Opens') && !catPart.includes('Closed') && !/\d/.test(catPart)) {
         category = normalizeText(catPart);
       }
     }
   }
 
-  let mapsUrl: string | undefined;
-  let sourceId = '';
-  if (linkEl && linkEl.href) {
-    mapsUrl = normalizeUrl(linkEl.href);
-    try {
-      const urlObj = new URL(linkEl.href);
-      sourceId = urlObj.origin + urlObj.pathname;
-      sourceId = sourceId.split('/@')[0];
-    } catch(e) {}
-  }
-
-  if (!sourceId) {
-    sourceId = `ask_maps:${name}`;
-  }
+  let sourceId = href;
+  try {
+    const urlObj = new URL(href, 'https://www.google.com');
+    sourceId = urlObj.origin + urlObj.pathname;
+    sourceId = sourceId.split('/@')[0];
+  } catch(e) {}
 
   const data: Partial<BusinessData> = {
     name,
     rating,
     reviewCount,
     category,
-    mapsUrl,
-    _sourceId: sourceId,
+    mapsUrl: normalizeUrl(href),
+    _sourceId: sourceId || `maps_place:${name}`,
     source: PageSource.MAPS,
     capturedAt: new Date().toISOString()
   };
 
   data.confidenceScore = calculateConfidence(data);
-  return data.confidenceScore >= 40 ? (data as BusinessData) : null;
+  return data as BusinessData;
 };
 
+/**
+ * Bulk extracts places from Google Maps using structural DOM scoping:
+ * 1. Classic search results: each item has 'a.hfpxzc'
+ * 2. Conversational / Ask Maps: each item has 'a[href*="/maps/place"]'
+ * 3. Opened place details pane (h1.DUwDvf) is strictly isolated (its internal sections are never treated as bulk leads)
+ */
 export const parseMapsBulk = (doc: Document | Element): BusinessData[] => {
   const results: BusinessData[] = [];
   const seenIds = new Set<string>();
@@ -189,41 +210,33 @@ export const parseMapsBulk = (doc: Document | Element): BusinessData[] => {
   const cards = doc.querySelectorAll('a.hfpxzc');
   cards.forEach((card) => {
     const data = parseSingleCard(card);
-    if (data && data._sourceId && data.name && !isBlacklistedBusinessName(data.name) && !seenIds.has(data._sourceId) && !seenNames.has(data.name.toLowerCase())) {
+    if (data && data._sourceId && data.name && !seenIds.has(data._sourceId) && !seenNames.has(data.name.toLowerCase())) {
       seenIds.add(data._sourceId);
       seenNames.add(data.name.toLowerCase());
       results.push(data);
     }
   });
 
-  // 2. Identify active place detail panel to prevent parsing its sub-sections (e.g. Menu, Updates by visitors)
+  // 2. Identify the single active place details pane if one is open
+  // h1.DUwDvf is the unique H1 element exclusively reserved for an opened place title
   const activeDetailTitle = doc.querySelector('h1.DUwDvf');
   const activeDetailPane = activeDetailTitle?.closest('.TI60gf, div[role="main"], .m6QErb');
 
   // 3. Ask Maps / conversational cards
-  const candidateHeadings = doc.querySelectorAll('.fontHeadlineSmall, div[role="article"] a[href*="/maps/place"]');
-  candidateHeadings.forEach((el) => {
-    // CRITICAL: Skip any sub-sections inside the opened place details panel!
-    if (activeDetailPane && activeDetailPane.contains(el)) {
-      return;
-    }
+  // Structurally, genuine places in Google Maps chat MUST contain an interactive anchor linking to the place (/maps/place/)
+  const placeLinks = doc.querySelectorAll('a[href*="/maps/place"]');
+  placeLinks.forEach((linkEl) => {
+    // Structural isolation:
+    // a) Skip classic search cards (already parsed above)
+    if (linkEl.classList.contains('hfpxzc')) return;
+    // b) Skip any links inside the active place details pane (that pane represents the single activeLead, not bulk candidates)
+    if (activeDetailPane && activeDetailPane.contains(linkEl)) return;
 
-    const cardContainer = (el.closest('div[jsaction*="place"]') || el.closest('div[role="article"] > div') || el.parentElement) as HTMLElement;
-    if (cardContainer && !cardContainer.querySelector('a.hfpxzc')) {
-      const data = parseAskMapsCard(cardContainer);
-      if (
-        data && 
-        data._sourceId && 
-        data.name && 
-        !isBlacklistedBusinessName(data.name) && 
-        !seenIds.has(data._sourceId) &&
-        !seenNames.has(data.name.toLowerCase()) &&
-        data.confidenceScore >= 40
-      ) {
-        seenIds.add(data._sourceId);
-        seenNames.add(data.name.toLowerCase());
-        results.push(data);
-      }
+    const data = parseAskMapsCard(linkEl);
+    if (data && data._sourceId && data.name && !seenIds.has(data._sourceId) && !seenNames.has(data.name.toLowerCase())) {
+      seenIds.add(data._sourceId);
+      seenNames.add(data.name.toLowerCase());
+      results.push(data);
     }
   });
 

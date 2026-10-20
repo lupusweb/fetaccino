@@ -53,12 +53,9 @@ export const normalizeUrl = (url: string | null | undefined): string | undefined
   return text;
 };
 
-import { isBlacklistedBusinessName } from '../../domain/business';
-
 export const calculateConfidence = (data: Partial<BusinessData>): number => {
-  if (isBlacklistedBusinessName(data.name)) {
-    return 0;
-  }
+  if (!data.name || data.name.trim().length < 2) return 0;
+
   let score = 0;
   let maxScore = 0;
 

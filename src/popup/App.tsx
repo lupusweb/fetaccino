@@ -1,4 +1,3 @@
-import { isBlacklistedBusinessName } from '../domain/business';
 import { useState, useEffect } from 'react';
 import './index.css';
 import { MessageType, ExtensionResponse } from '../domain/messages';
@@ -129,7 +128,7 @@ function App() {
   };
 
   const handleAddAllPageLeads = (leads: BusinessData[]) => {
-    const validLeads = leads.filter(l => l.name && !isBlacklistedBusinessName(l.name) && (l.confidenceScore || 0) >= 40);
+    const validLeads = leads.filter(l => l.name && (l.confidenceScore || 0) >= 40);
     validLeads.forEach(businessData => {
       chrome.runtime.sendMessage({
         type: MessageType.ADD_TO_QUEUE,
@@ -176,8 +175,8 @@ function App() {
     return false;
   };
 
-  const showActiveLeadCard = activePageLead && !isLeadInQueue(activePageLead) && !isBlacklistedBusinessName(activePageLead.name) && (activePageLead.confidenceScore || 0) >= 40;
-  const unaddedPageLeads = pageLeads.filter(l => !isLeadInQueue(l) && l.name && !isBlacklistedBusinessName(l.name) && (l.confidenceScore || 0) >= 40);
+  const showActiveLeadCard = activePageLead && !isLeadInQueue(activePageLead) && (activePageLead.confidenceScore || 0) >= 40;
+  const unaddedPageLeads = pageLeads.filter(l => !isLeadInQueue(l) && l.name && (l.confidenceScore || 0) >= 40);
 
   // Views
   if (!isAuthenticated) {

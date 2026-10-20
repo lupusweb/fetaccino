@@ -22,7 +22,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/index.ts-loader-CccckE62.js"
+        "assets/index.ts-loader-BiH5OY78.js"
       ],
       "matches": [
         "*://*.google.com/*",
@@ -31,7 +31,7 @@
         "*://google.co.in/*"
       ],
       "css": [
-        "assets/index-mrF2LVHs.css"
+        "assets/index-TexzursT.css"
       ]
     }
   ],
@@ -69,8 +69,7 @@
       "resources": [
         "assets/messages-BIE1jFtk.js",
         "assets/logger-BziXm1XX.js",
-        "assets/business-sh2DIUqn.js",
-        "assets/index.ts-DaBmWabo.js"
+        "assets/index.ts-D7bZ-CvL.js"
       ],
       "use_dynamic_url": false
     }

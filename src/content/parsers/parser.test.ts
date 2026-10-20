@@ -242,4 +242,32 @@ describe('Parsers with JSDOM', () => {
     expect(result.website).toBe('https://bangalorethindies.com/');
     expect(result.mapsUrl).toBe('https://maps.google.com/maps/dir/Bangalore+Thindies');
   });
+  it('does not parse active place panel sub-sections as bulk leads', () => {
+    document.body.innerHTML = `
+      <!-- Chat pane with 1 recommended business -->
+      <div role="region" aria-label="Ask Maps">
+        <div role="article">
+          <div class="fontHeadlineSmall">Corner House</div>
+          <a href="https://www.google.com/maps/place/Corner+House/@12.97,77.59"></a>
+        </div>
+      </div>
+
+      <!-- Active opened place detail pane with internal sub-sections -->
+      <div class="TI60gf m6QErb">
+        <h1 class="DUwDvf">Corner House</h1>
+        <div class="m6QErb">
+          <div class="fontHeadlineSmall">Menu & highlights</div>
+          <div class="fontHeadlineSmall">Updates by visitors</div>
+          <div class="fontHeadlineSmall">Popular times</div>
+          <div class="fontHeadlineSmall">About this place</div>
+        </div>
+      </div>
+    `;
+
+    const results = parseMapsBulk(document);
+    // Should ONLY contain Corner House from the chat pane, NOT the internal sub-sections!
+    expect(results.length).toBe(1);
+    expect(results[0].name).toBe('Corner House');
+    expect(results[0].mapsUrl).toBe('https://www.google.com/maps/place/Corner+House/@12.97,77.59');
+  });
 });

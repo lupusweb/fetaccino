@@ -19,10 +19,6 @@
       "assets/DestinationSelector-Bvb-4zUW.css"
     ]
   },
-  "_business-sh2DIUqn.js": {
-    "file": "assets/business-sh2DIUqn.js",
-    "name": "business"
-  },
   "_logger-BziXm1XX.js": {
     "file": "assets/logger-BziXm1XX.js",
     "name": "logger"
@@ -32,13 +28,12 @@
     "name": "messages"
   },
   "index.html": {
-    "file": "assets/index.html-R00g9fYs.js",
+    "file": "assets/index.html-DGjdXO5O.js",
     "name": "index.html",
     "src": "index.html",
     "isEntry": true,
     "imports": [
       "_DestinationSelector-RmxrSYLF.js",
-      "_business-sh2DIUqn.js",
       "_messages-BIE1jFtk.js"
     ],
     "css": [
@@ -46,7 +41,7 @@
     ]
   },
   "index.ts-loader.js": {
-    "file": "assets/index.ts-loader-CccckE62.js",
+    "file": "assets/index.ts-loader-BiH5OY78.js",
     "src": "index.ts-loader.js"
   },
   "src/background/index.ts": {
@@ -60,17 +55,16 @@
     ]
   },
   "src/content/index.ts": {
-    "file": "assets/index.ts-DaBmWabo.js",
+    "file": "assets/index.ts-D7bZ-CvL.js",
     "name": "index.ts",
     "src": "src/content/index.ts",
     "isEntry": true,
     "imports": [
       "_messages-BIE1jFtk.js",
-      "_logger-BziXm1XX.js",
-      "_business-sh2DIUqn.js"
+      "_logger-BziXm1XX.js"
     ],
     "css": [
-      "assets/index-mrF2LVHs.css"
+      "assets/index-TexzursT.css"
     ]
   },
   "src/options/index.html": {
