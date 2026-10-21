@@ -18,7 +18,7 @@ Fetaccino is a lightweight, privacy-first Chrome Extension designed for freelanc
 If you just want to use Fetaccino in Google Chrome, follow these simple steps:
 
 1. **Download the Latest Release:**  
-   Head to the **[Releases](../../releases)** tab on GitHub and download **`fetaccino-v1.0.0.zip`**.
+   Head to the **[Releases](https://github.com/lupusweb/fetaccino/releases)** tab on GitHub and download **`fetaccino-v1.0.0.zip`**.
 2. **Unzip the Folder:**  
    Extract the downloaded `.zip` file to a convenient folder on your computer (e.g., inside your Documents or Downloads folder).
 3. **Open Chrome Extensions:**  
