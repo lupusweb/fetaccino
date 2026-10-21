@@ -25,7 +25,7 @@ export const initUI = () => {
 };
 
 const renderButtonContent = (btn: HTMLElement, isSelected: boolean, _isDetail?: boolean) => {
-  const actionLabel = isSelected ? 'Added' : '+ Add';
+  const actionLabel = isSelected ? 'Added' : 'Add';
 
   btn.innerHTML = `
     <span class="fetaccino-action-text">${actionLabel}</span>
@@ -41,7 +41,7 @@ const renderButtonContent = (btn: HTMLElement, isSelected: boolean, _isDetail?: 
   btn.onmouseleave = () => {
     const textEl = btn.querySelector('.fetaccino-action-text');
     if (textEl) {
-      textEl.textContent = btn.classList.contains('selected') ? 'Added' : '+ Add';
+      textEl.textContent = btn.classList.contains('selected') ? 'Added' : 'Add';
     }
   };
 };
