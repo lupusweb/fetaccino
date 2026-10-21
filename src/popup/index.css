@@ -243,6 +243,9 @@ body {
   text-overflow: ellipsis;
 }
 
+.dest-banner-actions { display: flex; align-items: center; gap: 4px; }
+.dest-banner-open { color: #1a73e8; font-size: 12px; font-weight: 500; text-decoration: none; padding: 4px 6px; border-radius: 4px; }
+.dest-banner-open:hover { background-color: #e8f0fe; text-decoration: underline; }
 .dest-banner-change {
   background: none;
   border: none;

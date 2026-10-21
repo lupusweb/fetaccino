@@ -78,7 +78,26 @@ function App() {
   const loadDestination = () => {
     chrome.runtime.sendMessage({ type: MessageType.GET_DESTINATION }, (res) => {
       if (res && res.success && res.data) {
-        setDestination(res.data);
+        const dest = res.data;
+        // Verify sheet still exists in Drive
+        chrome.runtime.sendMessage(
+          { type: MessageType.TEST_SHEETS_CONNECTION, payload: { spreadsheetId: dest.spreadsheetId } },
+          (testRes) => {
+            if (testRes && testRes.success) {
+              setDestination(dest);
+            } else if (testRes && testRes.error && (testRes.error.includes('404') || testRes.error.includes('NOT_FOUND'))) {
+              // Sheet was deleted from Drive! Reset stale destination
+              chrome.storage.sync.remove('currentDestination');
+              setDestination(null);
+              setShowDestinationSelector(true);
+              setErrorMsg('Your previously connected spreadsheet was deleted from Google Drive. Please create a new one or select from Drive.');
+            } else {
+              setDestination(dest);
+            }
+          }
+        );
+      } else {
+        setDestination(null);
       }
       setStatus('Ready');
     });
@@ -160,7 +179,14 @@ function App() {
          setTimeout(() => setStatus('Ready'), 4000);
        } else {
          setStatus('Export Failed');
-         setErrorMsg(res?.error || 'Failed to export to Google Sheets.');
+         if (res?.error === 'NOT_FOUND' || (res?.error && res.error.includes('404'))) {
+           chrome.storage.sync.remove('currentDestination');
+           setDestination(null);
+           setShowDestinationSelector(true);
+           setErrorMsg('Spreadsheet was deleted from Google Drive. Please create a new sheet or select one.');
+         } else {
+           setErrorMsg(res?.error || 'Failed to export to Google Sheets.');
+         }
        }
     });
   };
@@ -259,9 +285,20 @@ function App() {
             {destination.spreadsheetName} &middot; {destination.sheetName}
           </span>
         </div>
-        <button className="dest-banner-change" onClick={() => setShowDestinationSelector(true)}>
-          Change
-        </button>
+        <div className="dest-banner-actions">
+          <a 
+            href={`https://docs.google.com/spreadsheets/d/${destination.spreadsheetId}/edit`} 
+            target="_blank" 
+            rel="noreferrer" 
+            className="dest-banner-open"
+            title="Open active spreadsheet in Google Sheets"
+          >
+            Open Sheet ↗
+          </a>
+          <button className="dest-banner-change" onClick={() => setShowDestinationSelector(true)}>
+            Change
+          </button>
+        </div>
       </div>
       
       {errorMsg && (

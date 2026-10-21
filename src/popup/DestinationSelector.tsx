@@ -213,6 +213,16 @@ export const DestinationSelector: FC<DestinationSelectorProps> = ({ onSelected, 
       </div>
       
       {errorMsg && <div className="error-box">{errorMsg}</div>}
+
+      <div style={{ padding: '0 0 12px 0' }}>
+        <button 
+          className="save-btn" 
+          style={{ width: '100%', padding: '10px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} 
+          onClick={handleCreateNew}
+        >
+          <span>＋</span> Create Default "Fetaccino Leads" Sheet
+        </button>
+      </div>
       
       <div className="dest-search-container">
         <span className="search-icon">🔍</span>

@@ -64,6 +64,9 @@ export const appendMultipleBusinessesToSheet = async (
     });
 
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('NOT_FOUND');
+      }
       const errorText = await response.text();
       logger.error('Failed to append multiple to sheets:', errorText);
       throw new Error(`Sheets API Error: ${response.status} ${response.statusText}`);
@@ -88,6 +91,9 @@ export const testSheetsConnection = async (token: string, spreadsheetId: string)
     });
 
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('NOT_FOUND');
+      }
       const errorText = await response.text();
       logger.error('Failed to test sheets connection:', errorText);
       throw new Error(`Connection failed: ${response.status} ${response.statusText}`);
@@ -124,8 +130,10 @@ export const filterDuplicates = async (
     });
 
     if (!response.ok) {
-      if (response.status === 404 || response.status === 400) {
-        // Range not found, probably sheet is empty
+      if (response.status === 404) {
+        throw new Error('NOT_FOUND');
+      }
+      if (response.status === 400) {
         return { newLeads: candidates, duplicates: [] };
       }
       const errorText = await response.text();

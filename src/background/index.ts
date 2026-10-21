@@ -246,7 +246,12 @@ chrome.runtime.onMessage.addListener(
                  } 
                });
              } catch (err: any) {
-               sendResponse({ success: false, error: err.message });
+               if (err.message === 'NOT_FOUND' || (err.message && err.message.includes('404'))) {
+                 chrome.storage.sync.remove('currentDestination');
+                 sendResponse({ success: false, error: 'NOT_FOUND' });
+               } else {
+                 sendResponse({ success: false, error: err.message });
+               }
              }
           })
           .catch((error) => sendResponse({ success: false, error: error.toString() }));
