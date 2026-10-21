@@ -8,6 +8,26 @@ import {
   calculateConfidence 
 } from './normalizer';
 
+const INVALID_HEADINGS = new Set([
+  'complementary results',
+  'complementary result',
+  'web results',
+  'search results',
+  'people also search for',
+  'related searches',
+  'about these results',
+  'videos',
+  'images',
+  'maps',
+  'updates by visitors',
+  'menu & highlights',
+  'popular times',
+  'photos',
+  'reviews',
+  'overview',
+  'about'
+]);
+
 export const parseSearchPage = (doc: Document, url: string): BusinessData => {
   const data: Partial<BusinessData> = {
     source: PageSource.SEARCH,
@@ -20,21 +40,23 @@ export const parseSearchPage = (doc: Document, url: string): BusinessData => {
   } catch (e) {}
 
   // 1. Places tab detail panel heading (span.HjGrCb) or standard KP
+  // Only search inside genuine local knowledge panels or place detail panels
   const nameEl = doc.querySelector('span.HjGrCb.lOLudc')
               || doc.querySelector('span.HjGrCb')
               || doc.querySelector('[role="heading"].HjGrCb')
               || doc.querySelector('h2[data-attrid="title"]')
               || doc.querySelector('.SPZz6b h2')
-              || doc.querySelector('h2.qrShPb')
               || doc.querySelector('div[data-attrid="title"]')
-              || doc.querySelector('#rhs h2');
+              || doc.querySelector('[data-attrid="kp-page-block-local-business"] h2');
 
-  data.name = normalizeText(nameEl?.textContent);
+  const rawName = normalizeText(nameEl?.textContent);
 
-  if (!data.name) {
+  if (!rawName || INVALID_HEADINGS.has(rawName.toLowerCase())) {
     data.confidenceScore = 0;
     return data as BusinessData;
   }
+
+  data.name = rawName;
 
   // Rating
   const ratingEl = doc.querySelector('div.dHX2k')
@@ -93,6 +115,13 @@ export const parseSearchPage = (doc: Document, url: string): BusinessData => {
                   || doc.querySelector('span.HjGrCb ~ div span');
 
   data.category = normalizeText(categoryEl?.textContent?.replace(/^[·•s]+/, ''));
+
+  // Reject any card that has no core business attributes (address, phone, website, or category)
+  if (!data.address && !data.phone && !data.website && !data.category) {
+    data.name = undefined;
+    data.confidenceScore = 0;
+    return data as BusinessData;
+  }
 
   data._sourceId = data.mapsUrl || `search_kp:${data.name}:${data.address || ''}`;
   data.confidenceScore = calculateConfidence(data);

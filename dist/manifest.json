@@ -22,7 +22,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/index.ts-loader-Cc686mc_.js"
+        "assets/index.ts-loader-B2gOeVvv.js"
       ],
       "matches": [
         "*://*.google.com/*",
@@ -70,7 +70,7 @@
       "resources": [
         "assets/messages-BIE1jFtk.js",
         "assets/logger-BziXm1XX.js",
-        "assets/index.ts-_muEAoak.js"
+        "assets/index.ts-DjFcMj_y.js"
       ],
       "use_dynamic_url": false
     }

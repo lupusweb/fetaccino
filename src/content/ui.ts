@@ -4,22 +4,42 @@ import { MessageType } from '../domain/messages';
 import { QueueItem, BusinessData, PageSource } from '../domain/business';
 import { analyzeCurrentPage } from './detector';
 
-// Logo URI removed from buttonbase64,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';
+let currentQueueIds: Set<string> = new Set();
+let currentQueueNames: Set<string> = new Set();
 
-let currentQueue: Set<string> = new Set();
+const normalizeKey = (str?: string): string => {
+  if (!str) return '';
+  return str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+};
+
+const isLeadSelected = (sourceId?: string, name?: string): boolean => {
+  if (sourceId && currentQueueIds.has(sourceId)) return true;
+  if (name) {
+    const key = normalizeKey(name);
+    if (key && key.length > 2 && currentQueueNames.has(key)) return true;
+  }
+  return false;
+};
+
+const syncQueueState = (queue: QueueItem[]) => {
+  currentQueueIds = new Set(queue.map(q => q.id));
+  currentQueueNames = new Set(
+    queue.map(q => normalizeKey(q.business?.name)).filter(Boolean)
+  );
+};
 
 export const initUI = () => {
   chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local' && changes.candidateQueue) {
       const queue: QueueItem[] = changes.candidateQueue.newValue || [];
-      currentQueue = new Set(queue.map(q => q.id));
+      syncQueueState(queue);
       updateCheckboxes();
     }
   });
 
   chrome.storage.local.get(['candidateQueue'], (res) => {
     const queue: QueueItem[] = res.candidateQueue || [];
-    currentQueue = new Set(queue.map(q => q.id));
+    syncQueueState(queue);
     injectSelectionUI();
   });
 };
@@ -62,13 +82,14 @@ const attachOverlay = (
     container.style.position = 'relative';
   }
 
-  const isSelected = currentQueue.has(businessData._sourceId);
+  const isSelected = isLeadSelected(businessData._sourceId, businessData.name);
   const isDetail = position === 'detail-action';
 
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = `fetaccino-action-btn pos-${position}${isSelected ? ' selected' : ''}`;
   btn.dataset.sourceId = businessData._sourceId;
+  btn.dataset.businessName = businessData.name;
   btn.dataset.isDetail = isDetail ? 'true' : 'false';
   btn.title = isSelected ? `Remove "${businessData.name}" from Fetaccino` : `Save "${businessData.name}" with Fetaccino`;
 
@@ -183,15 +204,18 @@ export const updateCheckboxes = () => {
   buttons.forEach(btnEl => {
     const btn = btnEl as HTMLElement;
     const sourceId = btn.dataset.sourceId;
+    const name = btn.dataset.businessName;
     const isDetail = btn.dataset.isDetail === 'true';
-    if (sourceId) {
-      const isSelected = currentQueue.has(sourceId);
+    if (sourceId || name) {
+      const isSelected = isLeadSelected(sourceId, name);
       const wasSelected = btn.classList.contains('selected');
       if (isSelected !== wasSelected) {
         if (isSelected) {
           btn.classList.add('selected');
+          btn.title = `Remove "${name || 'lead'}" from Fetaccino`;
         } else {
           btn.classList.remove('selected');
+          btn.title = `Save "${name || 'lead'}" with Fetaccino`;
         }
         renderButtonContent(btn, isSelected, isDetail);
       }
