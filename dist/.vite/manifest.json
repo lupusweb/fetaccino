@@ -6,17 +6,17 @@
     "isEntry": true
   },
   "_DestinationSelector-!~{004}~.js": {
-    "file": "assets/DestinationSelector-Bvb-4zUW.css",
+    "file": "assets/DestinationSelector-COCDK_Cz.css",
     "src": "_DestinationSelector-!~{004}~.js"
   },
-  "_DestinationSelector-C99A_u1n.js": {
-    "file": "assets/DestinationSelector-C99A_u1n.js",
+  "_DestinationSelector-DhSornif.js": {
+    "file": "assets/DestinationSelector-DhSornif.js",
     "name": "DestinationSelector",
     "imports": [
       "_messages-BIE1jFtk.js"
     ],
     "css": [
-      "assets/DestinationSelector-Bvb-4zUW.css"
+      "assets/DestinationSelector-COCDK_Cz.css"
     ]
   },
   "_logger-BziXm1XX.js": {
@@ -28,12 +28,12 @@
     "name": "messages"
   },
   "index.html": {
-    "file": "assets/index.html-bkh1Hm4e.js",
+    "file": "assets/index.html-nuHdfdJf.js",
     "name": "index.html",
     "src": "index.html",
     "isEntry": true,
     "imports": [
-      "_DestinationSelector-C99A_u1n.js",
+      "_DestinationSelector-DhSornif.js",
       "_messages-BIE1jFtk.js"
     ],
     "css": [
@@ -68,12 +68,12 @@
     ]
   },
   "src/options/index.html": {
-    "file": "assets/index.html-BTdoF1AW.js",
+    "file": "assets/index.html-B-D00fsC.js",
     "name": "index.html",
     "src": "src/options/index.html",
     "isEntry": true,
     "imports": [
-      "_DestinationSelector-C99A_u1n.js",
+      "_DestinationSelector-DhSornif.js",
       "_messages-BIE1jFtk.js"
     ],
     "css": [

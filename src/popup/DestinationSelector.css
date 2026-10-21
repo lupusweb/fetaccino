@@ -182,3 +182,24 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.dest-item-remove {
+  background: none;
+  border: none;
+  color: #9aa0a6;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  margin-left: auto;
+}
+
+.dest-item-remove:hover {
+  background-color: #fce8e6;
+  color: #d93025;
+}

@@ -27,7 +27,22 @@ const Options = () => {
   const loadDestination = () => {
     chrome.runtime.sendMessage({ type: MessageType.GET_DESTINATION }, (res) => {
       if (res && res.success && res.data) {
-        setDestination(res.data);
+        const dest = res.data;
+        chrome.runtime.sendMessage(
+          { type: MessageType.TEST_SHEETS_CONNECTION, payload: { spreadsheetId: dest.spreadsheetId } },
+          (testRes) => {
+            if (testRes && testRes.success) {
+              setDestination(dest);
+            } else if (testRes && testRes.error && (testRes.error.includes('404') || testRes.error.includes('NOT_FOUND'))) {
+              chrome.storage.sync.remove('currentDestination');
+              setDestination(null);
+            } else {
+              setDestination(dest);
+            }
+          }
+        );
+      } else {
+        setDestination(null);
       }
     });
   };

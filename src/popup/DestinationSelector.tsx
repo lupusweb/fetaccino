@@ -18,11 +18,34 @@ export const DestinationSelector: FC<DestinationSelectorProps> = ({ onSelected, 
   const [pasteUrl, setPasteUrl] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const handleRemoveRecent = (spreadsheetId: string, sheetName?: string) => {
+    chrome.storage.local.get(['recentDestinations'], (res) => {
+      const recents: SpreadsheetDestination[] = res.recentDestinations || [];
+      const updated = recents.filter(r => !(r.spreadsheetId === spreadsheetId && r.sheetName === sheetName));
+      chrome.storage.local.set({ recentDestinations: updated }, () => {
+        setRecentDestinations(updated);
+      });
+    });
+  };
+
   useEffect(() => {
     // Load recents
     chrome.runtime.sendMessage({ type: MessageType.GET_RECENT_DESTINATIONS }, (res: ExtensionResponse) => {
-      if (res && res.success) {
-        setRecentDestinations(res.data);
+      if (res && res.success && Array.isArray(res.data)) {
+        const list: SpreadsheetDestination[] = res.data;
+        setRecentDestinations(list);
+
+        // Auto-cleanup: remove any sheets that were deleted (404)
+        list.forEach(item => {
+          chrome.runtime.sendMessage(
+            { type: MessageType.TEST_SHEETS_CONNECTION, payload: { spreadsheetId: item.spreadsheetId } },
+            (testRes) => {
+              if (testRes && testRes.error && (testRes.error.includes('404') || testRes.error.includes('NOT_FOUND'))) {
+                handleRemoveRecent(item.spreadsheetId, item.sheetName);
+              }
+            }
+          );
+        });
       }
     });
     // Load initial empty search (recent/all)
@@ -242,10 +265,20 @@ export const DestinationSelector: FC<DestinationSelectorProps> = ({ onSelected, 
             {recentDestinations.map((d, i) => (
               <div key={`recent-${i}`} className="dest-item" onClick={() => onSelected(d)}>
                 <div className="dest-icon">📊</div>
-                <div className="dest-details">
+                <div className="dest-details" style={{ flex: 1, minWidth: 0 }}>
                   <div className="dest-name">{d.spreadsheetName}</div>
                   <div className="dest-sub">{d.sheetName}</div>
                 </div>
+                <button 
+                  className="dest-item-remove" 
+                  title="Remove from recent list"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveRecent(d.spreadsheetId, d.sheetName);
+                  }}
+                >
+                  ✕
+                </button>
               </div>
             ))}
             <div className="dest-list-header" style={{ marginTop: '12px' }}>All Spreadsheets</div>
