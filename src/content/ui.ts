@@ -4,6 +4,9 @@ import { MessageType } from '../domain/messages';
 import { QueueItem, BusinessData, PageSource } from '../domain/business';
 import { analyzeCurrentPage } from './detector';
 
+const FETACCINO_LOGO_URI = 'data:image/webp;base64,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';
+
+
 let currentQueueIds: Set<string> = new Set();
 let currentQueueNames: Set<string> = new Set();
 
@@ -48,6 +51,7 @@ const renderButtonContent = (btn: HTMLElement, isSelected: boolean, _isDetail?: 
   const actionLabel = isSelected ? 'Added' : 'Add';
 
   btn.innerHTML = `
+    <img class="fetaccino-logo-icon" src="${FETACCINO_LOGO_URI}" alt="Fetaccino" width="13" height="13" />
     <span class="fetaccino-action-text">${actionLabel}</span>
   `;
 
